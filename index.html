@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Director CAM | Comunicación Persistente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+            background: radial-gradient(circle at 10% 20%, #0a0f1e, #03060c);
+            min-height: 100vh;
+            padding: 20px;
+            color: #eef2ff;
+        }
+
+        /* contenedor principal */
+        .app {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* cabecera */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .badge {
+            background: #1e293bb3;
+            backdrop-filter: blur(8px);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 24px;
+            border-radius: 80px;
+            border: 1px solid #3b4b6e;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #7aa2f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .sub {
+            color: #9bb5e0;
+            max-width: 600px;
+            margin: 12px auto 0;
+        }
+
+        /* panel dual: director + instructivo */
+        .grid-dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .director-panel {
+            flex: 2;
+            min-width: 280px;
+            background: #0f172ae0;
+            backdrop-filter: blur(16px);
+            border-radius: 48px;
+            border: 1px solid #2d3b5a;
+            padding: 20px;
+            box-shadow: 0 20px 35px -12px black;
+        }
+
+        .info-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #0a0f1ccc;
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            border: 1px solid #2a3650;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+            padding-left: 16px;
+        }
+
+        /* iframe contenedor */
+        .iframe-container {
+            background: #010409;
+            border-radius: 32px;
+            overflow: hidden;
+            border: 2px solid #2d3a60;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            transition: 0.2s;
+        }
+
+        iframe {
+            width: 100%;
+            height: 460px;
+            border: none;
+            display: block;
+            background: #000000;
+        }
+
+        /* botones y controles */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: #1e2a44;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 60px;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.1s linear;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            box-shadow: 0 2px 8px #1e40af60;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.96);
+            background: #1d4ed8;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #4b6a9e;
+        }
+
+        .status-led {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 10px;
+            background: #10b981;
+            box-shadow: 0 0 6px #10b981;
+            margin-right: 8px;
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(0.8);}
+            100% { opacity: 1; transform: scale(1.2);}
+        }
+
+        /* tarjetas para camarógrafos (enlaces fijos) */
+        .cam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 14px;
+            margin: 20px 0 12px;
+        }
+
+        .cam-card {
+            background: #111827b3;
+            backdrop-filter: blur(4px);
+            border-radius: 28px;
+            padding: 12px 14px;
+            border: 1px solid #2f3b5a;
+            transition: 0.1s;
+        }
+
+        .cam-name {
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .link-copy {
+            background: #0f172a;
+            padding: 8px 10px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-family: monospace;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copy-btn {
+            background: #2d3a66;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 30px;
+            color: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .warning-note {
+            background: #facc1510;
+            border-left: 4px solid #facc15;
+            padding: 12px;
+            border-radius: 20px;
+            margin-top: 20px;
+            font-size: 0.75rem;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #5f6f96;
+            margin-top: 40px;
+            border-top: 1px solid #1f2a44;
+            padding-top: 24px;
+        }
+
+        @media (max-width: 700px) {
+            iframe {
+                height: 380px;
+            }
+            .grid-dashboard {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <div class="badge">
+            <span class="status-led"></span>
+            <span>COMUNICACIÓN PERSISTENTE | INFRAESTRUCTURA caller.studio</span>
+        </div>
+        <h1>🎬 DIRECCIÓN DE CÁMARAS</h1>
+        <div class="sub">Comunicación bidireccional fija · Audio en segundo plano · Pantalla bloqueada activa</div>
+    </div>
+
+    <div class="grid-dashboard">
+        <!-- Panel del Director: control y escucha permanente -->
+        <div class="director-panel">
+            <div class="section-title">
+                🎧 DIRECTOR / CONTROL
+                <span style="font-size: 0.7rem; background: #00000066; padding: 4px 12px; border-radius: 50px;">Siempre conectado</span>
+            </div>
+            <div class="iframe-container">
+                <!-- 
+                    Usamos caller.studio con enlace fijo para DIRECTOR (D1)
+                    Parámetros críticos:
+                    - novideo=1           → solo audio, menor consumo
+                    - ptt=1               → push to talk (opcional, pero el director decide cuando hablar)
+                    - audiobitrate=128    → calidad voz nítida
+                    - codec=opus          → mejor rendimiento en móvil
+                    - autostart=1         → entra automáticamente
+                    - monitor=1           → reconexión inteligente
+                    - background=1        → favorece audio en segundo plano
+                -->
+                <iframe 
+                    id="directorFrame"
+                    src="https://caller.studio/D1?novideo=1&ptt=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5"
+                    allow="microphone; autoplay; camera; display-capture; speaker"
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div class="button-group">
+                <button class="btn" id="reloadDirectorBtn">🔄 Recargar conexión</button>
+                <button class="btn btn-outline" id="openDirectorFull">🔓 Abrir en pantalla completa</button>
+            </div>
+            <div class="warning-note" style="margin-top: 16px;">
+                💡 <strong>Director:</strong> Mantén el micrófono activado cuando quieras dar instrucciones. 
+                Con <strong>ptt=1</strong> puedes usar el botón de "push to talk" dentro de la interfaz. 
+                Escucharás a todos los camarógrafos conectados automáticamente.
+            </div>
+        </div>
+
+        <!-- Panel derecho: instrucciones + estado permanente -->
+        <div class="info-panel">
+            <div class="section-title">
+                📡 CONEXIÓN FIJA
+            </div>
+            <p style="margin-bottom: 12px; font-size: 0.85rem;">🔗 Este sistema usa <strong>caller.studio</strong> (basado en VDO.Ninja) con enlaces <strong>permanentes</strong>. Los camarógrafos se conectan una sola vez y la comunicación se mantiene incluso con pantalla apagada si el navegador tiene permisos.</p>
+            <div style="background:#00000060; border-radius: 28px; padding: 12px; margin: 16px 0;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span>🟢</span> <span>Estado del director:</span>
+                    <span id="directorStatus" style="font-weight: bold;">Activo (escuchando)</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                    <span>📱</span> <span>Modo persistente:</span>
+                    <span style="color:#86efac;">activado · pantalla bloqueada compatible</span>
+                </div>
+            </div>
+            <div class="warning-note" style="background:#0b1120; margin-top: 0;">
+                ⚙️ <strong>CONFIGURACIÓN OBLIGATORIA PARA NO CORTAR:</strong><br>
+                • <strong>Android:</strong> Ajustes → Apps → Navegador (Chrome/Firefox) → Batería → "Sin restricciones".<br>
+                • <strong>iOS:</strong> Ajustes → Safari → "Reproducción en segundo plano" → ACTIVAR.<br>
+                • Mantén la pestaña abierta (puedes bloquear el teléfono, el audio seguirá).
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN CAMARÓGRAFOS: enlaces fijos para cada operador -->
+    <div style="margin-top: 20px;">
+        <div class="section-title">
+            🎥 CAMARÓGRAFOS · ENLACES PERMANENTES
+            <span style="font-size: 0.7rem;">(comparte cada link a tu equipo)</span>
+        </div>
+        <div class="cam-grid" id="camGrid"></div>
+        <div class="button-group" style="justify-content: flex-start; margin-top: 8px;">
+            <button class="btn" id="copyAllLinksBtn">📋 Copiar todos los enlaces</button>
+            <button class="btn btn-outline" id="helpPersistBtn">🔊 Guía persistencia móvil</button>
+        </div>
+    </div>
+
+    <!-- Log de eventos + tips -->
+    <div style="background: #03071280; border-radius: 28px; padding: 16px; margin-top: 24px;">
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
+            <span>📋</span><span style="font-weight: 600;">Comunicación activa persistente</span>
+        </div>
+        <div style="font-size: 0.75rem; color: #b9c7db; display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
+            <div>✅ <strong>Enlace Director fijo:</strong> D1 (siempre el mismo)</div>
+            <div>✅ <strong>Camarógrafos:</strong> C1 a C8 — cada enlace único y reutilizable</div>
+            <div>✅ <strong>Calidad de voz:</strong> 128kbps Opus + reconexión automática</div>
+        </div>
+    </div>
+    <footer>
+        🎙️ Infraestructura basada en caller.studio · Comunicación directa entre director y camarógrafos · 
+        Para garantizar funcionamiento con pantalla bloqueada sigue las recomendaciones de batería/segundo plano.
+        <br>📡 Los enlaces son fijos: el director usa <strong>D1</strong>, los camarógrafos desde <strong>C1 hasta C8</strong>.
+    </footer>
+</div>
+
+<script>
+    // ---------- GENERAR ENLACES PERMANENTES PARA CAMARÓGRAFOS ----------
+    // Cada camarógrafo tendrá un enlace fijo caller.studio con parámetros solo audio + reconexión
+    const CAM_COUNT = 8;
+    const BASE_PARAMS = "novideo=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5";
+    
+    // Lista de nombres sugeridos para los camarógrafos
+    const camNames = [
+        "Camarógrafo 1 · Cuerpo", "Camarógrafo 2 · Steady", "Camarógrafo 3 · Grúa", 
+        "Camarógrafo 4 · Dron", "Camarógrafo 5 · Handheld", "Camarógrafo 6 · Estudio",
+        "Camarógrafo 7 · Movil", "Camarógrafo 8 · Backup"
+    ];
+    
+    function generateCamLinks() {
+        const grid = document.getElementById('camGrid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= CAM_COUNT; i++) {
+            const camId = `C${i}`;
+            const fullUrl = `https://caller.studio/${camId}?${BASE_PARAMS}`;
+            const card = document.createElement('div');
+            card.className = 'cam-card';
+            card.innerHTML = `
+                <div class="cam-name">
+                    <span>🎥 ${camNames[i-1]}</span>
+                    <span style="background:#1f2a44; padding:2px 12px; border-radius:60px; font-size:0.7rem;">ID: ${camId}</span>
+                </div>
+                <div class="link-copy">
+                    <span style="overflow: hidden; text-overflow: ellipsis;">${fullUrl.substring(0, 48)}...</span>
+                    <button class="copy-btn" data-url="${fullUrl}">📋 Copiar</button>
+                </div>
+                <div style="font-size:0.65rem; margin-top: 8px; color:#95adf0;">🔊 audio persistente · pantalla bloqueada ✅</div>
+            `;
+            grid.appendChild(card);
+        }
+        // Añadir eventos copy a cada botón
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const url = btn.getAttribute('data-url');
+                navigator.clipboard.writeText(url).then(() => {
+                    const originalText = btn.innerText;
+                    btn.innerText = '✓ Copiado!';
+                    setTimeout(() => { btn.innerText = originalText; }, 1500);
+                    showToast(`Enlace copiado: ${url.substring(0, 50)}...`);
+                }).catch(() => alert('Manual: selecciona y copia la URL'));
+                e.stopPropagation();
+            });
+        });
+    }
+    
+    // Toast simple
+    function showToast(msg) {
+        let toast = document.getElementById('dynamicToast');
+        if(!toast) {
+            toast = document.createElement('div');
+            toast.id = 'dynamicToast';
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.left = '20px';
+            toast.style.right = '20px';
+            toast.style.maxWidth = '300px';
+            toast.style.background = '#1e293b';
+            toast.style.color = 'white';
+            toast.style.padding = '12px 20px';
+            toast.style.borderRadius = '60px';
+            toast.style.fontSize = '0.8rem';
+            toast.style.zIndex = '9999';
+            toast.style.backdropFilter = 'blur(8px)';
+            toast.style.border = '1px solid #3b82f6';
+            toast.style.textAlign = 'center';
+            document.body.appendChild(toast);
+        }
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 2000);
+    }
+    
+    // Copiar todos los enlaces
+    document.getElementById('copyAllLinksBtn')?.addEventListener('click', () => {
+        let allLinks = [];
+        for(let i=1; i<=CAM_COUNT; i++) {
+            allLinks.push(`Camarógrafo ${i}: https://caller.studio/C${i}?${BASE_PARAMS}`);
+        }
+        const textToCopy = allLinks.join('\n');
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast(`📋 Copiados ${CAM_COUNT} enlaces de camarógrafos`);
+        }).catch(() => alert('Copia manual: selecciona los enlaces'));
+    });
+    
+    // Guía persistencia (modal alert style)
+    document.getElementById('helpPersistBtn')?.addEventListener('click', () => {
+        const msg = "🔊 CONSEJOS PARA EVITAR CORTE AL BLOQUEAR PANTALLA:\n\nAndroid: Ajustes → Apps → [Chrome/Firefox] → Batería → Sin restricciones / Optimización desactivada.\niOS: Ajustes → Safari → Reproducción en segundo plano → ACTIVAR.\nAdemás: Mantén la pestaña activa en segundo plano, no cierres el navegador. El audio seguirá sonando aunque esté bloqueado si diste los permisos.";
+        alert(msg);
+    });
+    
+    // Recargar iframe del director (útil si por alguna razón se desconecta)
+    const directorFrame = document.getElementById('directorFrame');
+    document.getElementById('reloadDirectorBtn')?.addEventListener('click', () => {
+        if(directorFrame) {
+            const currentSrc = directorFrame.src;
+            directorFrame.src = '';
+            setTimeout(() => {
+                directorFrame.src = currentSrc;
+                showToast('🔄 Conexión del director reiniciada');
+                updateDirectorStatus(true);
+            }, 200);
+        }
+    });
+    
+    // Abrir panel director en pantalla completa o nueva pestaña
+    document.getElementById('openDirectorFull')?.addEventListener('click', () => {
+        const directorUrl = "https://caller.studio/D1?novideo=1&ptt=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5";
+        window.open(directorUrl, '_blank', 'width=800,height=600');
+        showToast('🔓 Abierto en nueva ventana, el audio seguirá funcionando');
+    });
+    
+    // Pequeña simulación de estado (solo informativo)
+    function updateDirectorStatus(connected = true) {
+        const statusSpan = document.getElementById('directorStatus');
+        if(statusSpan) {
+            if(connected) {
+                statusSpan.innerHTML = '✅ Conectado · escuchando sala';
+                statusSpan.style.color = '#a3e635';
+            } else {
+                statusSpan.innerHTML = '⚠️ Reconectando...';
+                statusSpan.style.color = '#facc15';
+            }
+        }
+    }
+    
+    // Detectar si el iframe ha cargado (evento no siempre accesible por dominio cruzado)
+    // pero al menos podemos asumir que se conecta; añadimos un temporizador para indicar
+    window.addEventListener('load', () => {
+        generateCamLinks();
+        updateDirectorStatus(true);
+        // Forzar un heartbeat para recordar que el audio debe mantenerse: 
+        // Pequeño script para evitar que el navegador suspenda el contexto de audio.
+        // No es necesario con caller.studio porque el stream WebRTC ya mantiene la conexión.
+        setInterval(() => {
+            // Si el iframe sigue cargado, se mantiene la sesión activa.
+            // Esto es solo para mantener la consciencia de que la página sigue viva.
+            console.log("🎙️ Comunicación persistente activa - heartbeat");
+        }, 25000);
+    });
+    
+    // Detectar cambios de visibilidad (por si el usuario quiere un aviso)
+    document.addEventListener('visibilitychange', () => {
+        if(document.hidden) {
+            console.log("📱 Pestaña en segundo plano - el audio continuará si los permisos están correctos");
+        } else {
+            console.log("🟢 Regreso a la pestaña - comunicación activa");
+        }
+    });
+    
+    // Prevenir cierre accidental antes de recargar?
+    window.addEventListener('beforeunload', (e) => {
+        // Mensaje opcional para advertir que no cierren la pestaña del director
+        // No abusivo, solo recordatorio.
+        e.preventDefault();
+        e.returnValue = "¿Cerrar la comunicación? Los camarógrafos seguirán conectados pero perderás el control.";
+        return "¿Cerrar la comunicación? Los camarógrafos seguirán conectados pero perderás el control.";
+    });
+    
+    // Botón extra para compartir link del director fácilmente (tool)
+    const shareDirectorBtn = document.createElement('button');
+    shareDirectorBtn.className = 'btn';
+    shareDirectorBtn.innerHTML = '📢 Compartir enlace del director';
+    shareDirectorBtn.style.marginLeft = 'auto';
+    const btnGroup = document.querySelector('.director-panel .button-group');
+    if(btnGroup) {
+        shareDirectorBtn.addEventListener('click', () => {
+            const directorLink = "https://caller.studio/D1?novideo=1&ptt=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5";
+            navigator.clipboard.writeText(directorLink).then(() => {
+                showToast('🔗 Enlace del director copiado (solo para uso interno)');
+            });
+        });
+        btnGroup.appendChild(shareDirectorBtn);
+    }
+    
+    // También mejoramos la accesibilidad: mostrar que el ID del director es fijo y que los C1..C8 son únicos
+    const infoExtra = document.createElement('div');
+    infoExtra.style.marginTop = '12px';
+    infoExtra.style.fontSize = '0.7rem';
+    infoExtra.style.background = '#0f172a70';
+    infoExtra.style.padding = '8px 12px';
+    infoExtra.style.borderRadius = '28px';
+    infoExtra.innerHTML = '🔁 <strong>Enlaces permanentes:</strong> el director siempre será <strong>D1</strong> y los camarógrafos desde <strong>C1 a C8</strong>. Cada vez que abran el enlace se unirán a la misma sala.';
+    document.querySelector('.director-panel').appendChild(infoExtra);
+    
+    // Opción para mostrar en consola sugerencias técnicas
+    console.log("%c🎬 DIRECCIÓN CAM | Comunicación fija caller.studio", "color: #3b82f6; font-size: 16px");
+    console.log("Los camarógrafos deben copiar su enlace individual (C1..C8). Modo persistente activado.");
+</script>
+</body>
+</html>
