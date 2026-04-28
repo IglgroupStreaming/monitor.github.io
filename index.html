@@ -2,549 +2,721 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Director CAM | Comunicación Persistente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>StreamTalk V9.0 - Intercom Matrix IFB</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
         }
 
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
-            background: radial-gradient(circle at 10% 20%, #0a0f1e, #03060c);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0c12;
             color: #eef2ff;
-        }
-
-        /* contenedor principal */
-        .app {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* cabecera */
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .badge {
-            background: #1e293bb3;
-            backdrop-filter: blur(8px);
-            display: inline-flex;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 12px;
-            padding: 8px 24px;
-            border-radius: 80px;
-            border: 1px solid #3b4b6e;
-            margin-bottom: 16px;
+            padding: 16px;
         }
 
-        h1 {
-            font-size: 2rem;
+        .app-container {
+            max-width: 550px;
+            width: 100%;
+            margin: auto;
+            background: #12141c;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            border: 1px solid #2a2f3f;
+            transition: all 0.2s;
+        }
+
+        .header {
+            padding: 24px 24px 16px;
+            background: linear-gradient(135deg, #10121a, #0b0d12);
+            border-bottom: 1px solid #252a36;
+        }
+
+        .logo {
+            font-size: 24px;
             font-weight: 700;
-            background: linear-gradient(135deg, #fff, #7aa2f7);
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FFB347, #FF6B4A);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: -0.3px;
+            margin-bottom: 6px;
         }
 
-        .sub {
-            color: #9bb5e0;
-            max-width: 600px;
-            margin: 12px auto 0;
-        }
-
-        /* panel dual: director + instructivo */
-        .grid-dashboard {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .director-panel {
-            flex: 2;
-            min-width: 280px;
-            background: #0f172ae0;
-            backdrop-filter: blur(16px);
-            border-radius: 48px;
-            border: 1px solid #2d3b5a;
-            padding: 20px;
-            box-shadow: 0 20px 35px -12px black;
-        }
-
-        .info-panel {
-            flex: 1.2;
-            min-width: 260px;
-            background: #0a0f1ccc;
-            backdrop-filter: blur(12px);
+        .badge {
+            font-size: 12px;
+            background: #1e2434;
+            display: inline-block;
+            padding: 4px 12px;
             border-radius: 40px;
-            border: 1px solid #2a3650;
+            color: #9ca3cf;
+            font-weight: 500;
+        }
+
+        .view {
             padding: 20px;
+            display: none;
+            animation: fadeIn 0.2s ease;
         }
 
-        .section-title {
-            font-weight: 600;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            border-left: 4px solid #3b82f6;
-            padding-left: 16px;
-        }
-
-        /* iframe contenedor */
-        .iframe-container {
-            background: #010409;
-            border-radius: 32px;
-            overflow: hidden;
-            border: 2px solid #2d3a60;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-            transition: 0.2s;
-        }
-
-        iframe {
-            width: 100%;
-            height: 460px;
-            border: none;
+        .view.active {
             display: block;
-            background: #000000;
         }
 
-        /* botones y controles */
-        .button-group {
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .ptt-button {
+            background: linear-gradient(145deg, #1f2538, #141822);
+            border-radius: 80px;
+            padding: 18px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.08s linear;
+            border: 1px solid #2e3548;
+            box-shadow: 0 6px 0 #0a0c10;
+        }
+
+        .ptt-button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #0a0c10;
+        }
+
+        .ptt-label {
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+
+        .ptt-sub {
+            font-size: 13px;
+            color: #8b92b0;
+            margin-top: 6px;
+        }
+
+        .recording-active {
+            background: linear-gradient(145deg, #c2410c, #9a3412);
+            border-color: #f97316;
+            color: white;
+        }
+
+        .matrix-grid {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-top: 20px;
-            justify-content: center;
+            margin: 20px 0;
         }
 
-        .btn {
-            background: #1e2a44;
+        .channel-btn {
+            background: #1a1e2c;
             border: none;
-            padding: 10px 18px;
+            padding: 12px 16px;
             border-radius: 60px;
+            color: #cdd6f4;
             font-weight: 600;
+            font-size: 15px;
+            flex: 1 0 auto;
+            transition: 0.1s;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .channel-btn.active {
+            background: #ff7b2c;
             color: white;
-            display: inline-flex;
+            box-shadow: 0 0 8px #ff7b2c80;
+        }
+
+        .status-indicator {
+            display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
-            transition: 0.1s linear;
-            font-size: 0.85rem;
+            font-size: 13px;
+            background: #0e1119;
+            padding: 10px 16px;
+            border-radius: 60px;
+            margin: 16px 0;
         }
 
-        .btn-primary {
-            background: #2563eb;
-            box-shadow: 0 2px 8px #1e40af60;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.96);
-            background: #1d4ed8;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #4b6a9e;
-        }
-
-        .status-led {
-            display: inline-block;
+        .led {
             width: 10px;
             height: 10px;
             border-radius: 10px;
-            background: #10b981;
-            box-shadow: 0 0 6px #10b981;
-            margin-right: 8px;
-            animation: pulse 1.4s infinite;
+            background: #4ade80;
+            box-shadow: 0 0 4px #4ade80;
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.4; transform: scale(0.8);}
-            100% { opacity: 1; transform: scale(1.2);}
+        .led-red {
+            background: #ef4444;
+            box-shadow: 0 0 4px #ef4444;
         }
 
-        /* tarjetas para camarógrafos (enlaces fijos) */
-        .cam-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-            gap: 14px;
-            margin: 20px 0 12px;
+        .crew-list {
+            background: #0c0f16;
+            border-radius: 32px;
+            padding: 16px;
+            margin-top: 18px;
         }
 
-        .cam-card {
-            background: #111827b3;
-            backdrop-filter: blur(4px);
-            border-radius: 28px;
-            padding: 12px 14px;
-            border: 1px solid #2f3b5a;
-            transition: 0.1s;
-        }
-
-        .cam-name {
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-        }
-
-        .link-copy {
-            background: #0f172a;
-            padding: 8px 10px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-family: monospace;
-            word-break: break-all;
+        .crew-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 6px;
+            padding: 12px 0;
+            border-bottom: 1px solid #202433;
         }
 
-        .copy-btn {
-            background: #2d3a66;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 30px;
-            color: white;
-            font-size: 0.7rem;
+        .modo-bolsillo {
+            background: #1a1f2c;
+            border-radius: 60px;
+            padding: 14px;
+            margin-top: 24px;
+            text-align: center;
+            font-weight: 500;
+            border: 1px dashed #3b4259;
             cursor: pointer;
         }
 
-        .warning-note {
-            background: #facc1510;
-            border-left: 4px solid #facc15;
+        .alert-badge {
+            background: #b91c1c;
+            padding: 8px 12px;
+            border-radius: 28px;
+            font-weight: bold;
+            font-size: 14px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7;}
+            100% { opacity: 1;}
+        }
+
+        .join-form {
+            background: #0e1119;
+            padding: 20px;
+            border-radius: 40px;
+            margin: 20px 0;
+        }
+
+        input, select {
+            background: #1e2434;
+            border: none;
+            padding: 14px;
+            border-radius: 44px;
+            color: white;
+            font-size: 16px;
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        button {
+            background: #ff7b2c;
+            border: none;
+            padding: 14px;
+            border-radius: 44px;
+            font-weight: bold;
+            color: #0f0f1a;
+            width: 100%;
+            margin-top: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .toast {
+            background: #2e2f3e;
+            position: fixed;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
             padding: 12px;
-            border-radius: 20px;
-            margin-top: 20px;
-            font-size: 0.75rem;
-        }
-
-        footer {
+            border-radius: 60px;
             text-align: center;
-            font-size: 0.7rem;
-            color: #5f6f96;
-            margin-top: 40px;
-            border-top: 1px solid #1f2a44;
-            padding-top: 24px;
+            z-index: 1000;
+            transition: 0.2s;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
         }
 
-        @media (max-width: 700px) {
-            iframe {
-                height: 380px;
-            }
-            .grid-dashboard {
-                flex-direction: column;
-            }
+        .bolsillo-activo {
+            background: #000000dd;
+            backdrop-filter: blur(8px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .share-link-btn {
+            background: linear-gradient(135deg, #2a3a5e, #1e2a44);
+            border: 1px solid #4c6a9e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .share-link-btn:active {
+            transform: scale(0.98);
+        }
+
+        .director-id-box {
+            background: #0a0c10;
+            padding: 10px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-family: monospace;
+            text-align: center;
+            margin: 12px 0;
+            word-break: break-all;
+            border: 1px solid #2a2f3f;
         }
     </style>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
-<div class="app">
+<div class="app-container" id="appContainer">
     <div class="header">
-        <div class="badge">
-            <span class="status-led"></span>
-            <span>COMUNICACIÓN PERSISTENTE | INFRAESTRUCTURA caller.studio</span>
-        </div>
-        <h1>🎬 DIRECCIÓN DE CÁMARAS</h1>
-        <div class="sub">Comunicación bidireccional fija · Audio en segundo plano · Pantalla bloqueada activa</div>
+        <div class="logo">STREAMTALK V9.0</div>
+        <div class="badge">COMUNICACIÓN PROFESIONAL · MATRIX IFB</div>
     </div>
 
-    <div class="grid-dashboard">
-        <!-- Panel del Director: control y escucha permanente -->
-        <div class="director-panel">
-            <div class="section-title">
-                🎧 DIRECTOR / CONTROL
-                <span style="font-size: 0.7rem; background: #00000066; padding: 4px 12px; border-radius: 50px;">Siempre conectado</span>
-            </div>
-            <div class="iframe-container">
-                <!-- 
-                    Usamos caller.studio con enlace fijo para DIRECTOR (D1)
-                    Parámetros críticos:
-                    - novideo=1           → solo audio, menor consumo
-                    - ptt=1               → push to talk (opcional, pero el director decide cuando hablar)
-                    - audiobitrate=128    → calidad voz nítida
-                    - codec=opus          → mejor rendimiento en móvil
-                    - autostart=1         → entra automáticamente
-                    - monitor=1           → reconexión inteligente
-                    - background=1        → favorece audio en segundo plano
-                -->
-                <iframe 
-                    id="directorFrame"
-                    src="https://caller.studio/D1?novideo=1&ptt=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5"
-                    allow="microphone; autoplay; camera; display-capture; speaker"
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="button-group">
-                <button class="btn" id="reloadDirectorBtn">🔄 Recargar conexión</button>
-                <button class="btn btn-outline" id="openDirectorFull">🔓 Abrir en pantalla completa</button>
-            </div>
-            <div class="warning-note" style="margin-top: 16px;">
-                💡 <strong>Director:</strong> Mantén el micrófono activado cuando quieras dar instrucciones. 
-                Con <strong>ptt=1</strong> puedes usar el botón de "push to talk" dentro de la interfaz. 
-                Escucharás a todos los camarógrafos conectados automáticamente.
-            </div>
-        </div>
-
-        <!-- Panel derecho: instrucciones + estado permanente -->
-        <div class="info-panel">
-            <div class="section-title">
-                📡 CONEXIÓN FIJA
-            </div>
-            <p style="margin-bottom: 12px; font-size: 0.85rem;">🔗 Este sistema usa <strong>caller.studio</strong> (basado en VDO.Ninja) con enlaces <strong>permanentes</strong>. Los camarógrafos se conectan una sola vez y la comunicación se mantiene incluso con pantalla apagada si el navegador tiene permisos.</p>
-            <div style="background:#00000060; border-radius: 28px; padding: 12px; margin: 16px 0;">
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <span>🟢</span> <span>Estado del director:</span>
-                    <span id="directorStatus" style="font-weight: bold;">Activo (escuchando)</span>
-                </div>
-                <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
-                    <span>📱</span> <span>Modo persistente:</span>
-                    <span style="color:#86efac;">activado · pantalla bloqueada compatible</span>
-                </div>
-            </div>
-            <div class="warning-note" style="background:#0b1120; margin-top: 0;">
-                ⚙️ <strong>CONFIGURACIÓN OBLIGATORIA PARA NO CORTAR:</strong><br>
-                • <strong>Android:</strong> Ajustes → Apps → Navegador (Chrome/Firefox) → Batería → "Sin restricciones".<br>
-                • <strong>iOS:</strong> Ajustes → Safari → "Reproducción en segundo plano" → ACTIVAR.<br>
-                • Mantén la pestaña abierta (puedes bloquear el teléfono, el audio seguirá).
-            </div>
+    <!-- VISTA DE CONFIGURACIÓN INICIAL (elegir rol) -->
+    <div id="configView" class="view active">
+        <div class="join-form">
+            <h3 style="margin-bottom: 12px;">🎤 Unirse a sala</h3>
+            <input type="text" id="roomIdInput" placeholder="ID de Sala (ej: 8275)" value="8275">
+            <input type="text" id="userNameInput" placeholder="Nombre / Rol (CAM 1, SONIDO, DIRECTOR)" value="CAM 1">
+            <select id="roleSelect">
+                <option value="crew">🎧 EQUIPO (escucha + PTT)</option>
+                <option value="director">🎬 DIRECTOR (matriz + habla a todos)</option>
+            </select>
+            <button id="joinBtn">INGRESAR A SALA</button>
+            <p style="font-size:12px; margin-top:12px;">🔊 Usa auriculares para evitar feedback. Modo push to talk.</p>
         </div>
     </div>
 
-    <!-- SECCIÓN CAMARÓGRAFOS: enlaces fijos para cada operador -->
-    <div style="margin-top: 20px;">
-        <div class="section-title">
-            🎥 CAMARÓGRAFOS · ENLACES PERMANENTES
-            <span style="font-size: 0.7rem;">(comparte cada link a tu equipo)</span>
+    <!-- VISTA DIRECTOR -->
+    <div id="directorView" class="view">
+        <div class="status-indicator"><span class="led"></span> <span id="directorRoomStatus">Sala: 8275 · Modo MATRIZ</span></div>
+        
+        <!-- NUEVO: BOTÓN COMPARTIR LINK Y PEER ID -->
+        <button class="share-link-btn" id="shareInviteBtn">🔗 COMPARTIR LINK DE INVITACIÓN</button>
+        <div class="director-id-box" id="directorPeerIdBox">🆔 Conectando...</div>
+        
+        <div style="font-weight: bold; margin: 10px 0 5px;">🎛️ DESTINOS DE AUDIO (RUTEO)</div>
+        <div class="matrix-grid" id="matrixButtons">
+            <div class="channel-btn active" data-channel="all">🔊 TODOS</div>
+            <div class="channel-btn" data-channel="CAM 1">📹 CAM 1</div>
+            <div class="channel-btn" data-channel="CAM 2">📹 CAM 2</div>
+            <div class="channel-btn" data-channel="CAM 3">📹 CAM 3</div>
+            <div class="channel-btn" data-channel="CAM 4">📹 CAM 4</div>
+            <div class="channel-btn" data-channel="SONIDO">🎚️ SONIDO</div>
+            <div class="channel-btn" data-channel="PISO">🎙️ PISO</div>
         </div>
-        <div class="cam-grid" id="camGrid"></div>
-        <div class="button-group" style="justify-content: flex-start; margin-top: 8px;">
-            <button class="btn" id="copyAllLinksBtn">📋 Copiar todos los enlaces</button>
-            <button class="btn btn-outline" id="helpPersistBtn">🔊 Guía persistencia móvil</button>
+        <div class="ptt-button" id="directorPttBtn">
+            <div class="ptt-label">🎙️ HABLAR</div>
+            <div class="ptt-sub">Mantén presionado para hablar al destino seleccionado</div>
         </div>
+        <div class="crew-list">
+            <div><strong>🎧 EQUIPO CONECTADO</strong></div>
+            <div id="crewListContainer">— Esperando crew —</div>
+        </div>
+        <div class="modo-bolsillo" id="directorPocketMode">📱 ACTIVAR MODO BOLSILLO (pantalla negra)</div>
+        <div style="font-size: 12px; margin-top: 18px; text-align:center;">🔁 Reconexión automática · Audio en tiempo real</div>
     </div>
 
-    <!-- Log de eventos + tips -->
-    <div style="background: #03071280; border-radius: 28px; padding: 16px; margin-top: 24px;">
-        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
-            <span>📋</span><span style="font-weight: 600;">Comunicación activa persistente</span>
+    <!-- VISTA EQUIPO (CREW) -->
+    <div id="crewView" class="view">
+        <div class="status-indicator"><span class="led" id="crewLed"></span> <span id="crewRoomLabel">Sala: 8275 · Rol: CAM 1</span></div>
+        <div id="alertArea" class="alert-badge" style="display: none;">🔴 ¡ALERTA! Director hablando</div>
+        <div class="ptt-button" id="crewPttBtn">
+            <div class="ptt-label">🔘 PUSH TO TALK</div>
+            <div class="ptt-sub">Mantén para responder al Director</div>
         </div>
-        <div style="font-size: 0.75rem; color: #b9c7db; display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
-            <div>✅ <strong>Enlace Director fijo:</strong> D1 (siempre el mismo)</div>
-            <div>✅ <strong>Camarógrafos:</strong> C1 a C8 — cada enlace único y reutilizable</div>
-            <div>✅ <strong>Calidad de voz:</strong> 128kbps Opus + reconexión automática</div>
+        <div class="modo-bolsillo" id="crewPocketMode">📱 ACTIVAR MODO BOLSILLO (pantalla apagada simulada)</div>
+        <div class="crew-list" style="margin-top:12px;">
+            <div><strong>📡 RECIBIENDO RETORNO</strong></div>
+            <div id="directorSpeakingIndicator">⚫ En espera</div>
         </div>
+        <div class="status-indicator" style="margin-top: 12px;">
+            <span>🔇 CANAL SILENCIADO? </span>
+            <button id="toggleMuteBtn" style="width: auto; padding: 6px 20px; margin:0">SILENCIAR RETORNO</button>
+        </div>
+        <p style="font-size: 12px; background:#0a0c10; border-radius: 20px; padding: 12px; margin-top: 16px;">⚠️ IMPORTANTE: No apagues pantalla con botón físico. Usa MODO BOLSILLO para simular pantalla apagada y evitar corte de audio.</p>
     </div>
-    <footer>
-        🎙️ Infraestructura basada en caller.studio · Comunicación directa entre director y camarógrafos · 
-        Para garantizar funcionamiento con pantalla bloqueada sigue las recomendaciones de batería/segundo plano.
-        <br>📡 Los enlaces son fijos: el director usa <strong>D1</strong>, los camarógrafos desde <strong>C1 hasta C8</strong>.
-    </footer>
 </div>
 
 <script>
-    // ---------- GENERAR ENLACES PERMANENTES PARA CAMARÓGRAFOS ----------
-    // Cada camarógrafo tendrá un enlace fijo caller.studio con parámetros solo audio + reconexión
-    const CAM_COUNT = 8;
-    const BASE_PARAMS = "novideo=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5";
-    
-    // Lista de nombres sugeridos para los camarógrafos
-    const camNames = [
-        "Camarógrafo 1 · Cuerpo", "Camarógrafo 2 · Steady", "Camarógrafo 3 · Grúa", 
-        "Camarógrafo 4 · Dron", "Camarógrafo 5 · Handheld", "Camarógrafo 6 · Estudio",
-        "Camarógrafo 7 · Movil", "Camarógrafo 8 · Backup"
-    ];
-    
-    function generateCamLinks() {
-        const grid = document.getElementById('camGrid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= CAM_COUNT; i++) {
-            const camId = `C${i}`;
-            const fullUrl = `https://caller.studio/${camId}?${BASE_PARAMS}`;
-            const card = document.createElement('div');
-            card.className = 'cam-card';
-            card.innerHTML = `
-                <div class="cam-name">
-                    <span>🎥 ${camNames[i-1]}</span>
-                    <span style="background:#1f2a44; padding:2px 12px; border-radius:60px; font-size:0.7rem;">ID: ${camId}</span>
-                </div>
-                <div class="link-copy">
-                    <span style="overflow: hidden; text-overflow: ellipsis;">${fullUrl.substring(0, 48)}...</span>
-                    <button class="copy-btn" data-url="${fullUrl}">📋 Copiar</button>
-                </div>
-                <div style="font-size:0.65rem; margin-top: 8px; color:#95adf0;">🔊 audio persistente · pantalla bloqueada ✅</div>
-            `;
-            grid.appendChild(card);
+    // ------------------------------
+    // STREAMTALK V9.0 - COMPLETO CON LINK DE INVITACIÓN
+    // El director genera un link que contiene su Peer ID y el Room ID
+    // El crew al abrir el link se une automáticamente sin prompts manuales
+    // ------------------------------
+    let role = null;
+    let roomId = "8275";
+    let userName = "";
+    let peer = null;
+    let directorPeerId = null;     
+    let mediaStream = null;
+    let audioElements = new Map();   
+    let connections = new Map();     
+    let isDirector = false;
+    let currentTargetChannel = "all";   
+    let localAudioEnabled = false;       
+    let crewMuteState = false;
+
+    // crew side
+    let myCrewRole = "";
+    let directorCallReference = null;
+    let directorDataConnection = null;
+
+    const configView = document.getElementById('configView');
+    const directorView = document.getElementById('directorView');
+    const crewView = document.getElementById('crewView');
+    const joinBtn = document.getElementById('joinBtn');
+    const roomIdInput = document.getElementById('roomIdInput');
+    const userNameInput = document.getElementById('userNameInput');
+    const roleSelect = document.getElementById('roleSelect');
+
+    function showToast(msg, duration = 2500) {
+        let t = document.createElement('div');
+        t.className = 'toast';
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), duration);
+    }
+
+    // Modo bolsillo
+    function activatePocketMode() {
+        let overlay = document.createElement('div');
+        overlay.className = 'bolsillo-activo';
+        overlay.innerHTML = `<div style="text-align:center;">📱 MODO BOLSILLO ACTIVADO<br><span style="font-size:13px;">🔘 Toca dos veces para salir</span></div>`;
+        overlay.addEventListener('dblclick', () => overlay.remove());
+        document.body.appendChild(overlay);
+        showToast("Modo bolsillo: pantalla simulada apagada. Audio activo.", 1500);
+    }
+
+    async function getMicrophone() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaStream = stream;
+            return stream;
+        } catch(e) {
+            showToast("Error: Permiso de micrófono denegado");
+            return null;
         }
-        // Añadir eventos copy a cada botón
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const url = btn.getAttribute('data-url');
-                navigator.clipboard.writeText(url).then(() => {
-                    const originalText = btn.innerText;
-                    btn.innerText = '✓ Copiado!';
-                    setTimeout(() => { btn.innerText = originalText; }, 1500);
-                    showToast(`Enlace copiado: ${url.substring(0, 50)}...`);
-                }).catch(() => alert('Manual: selecciona y copia la URL'));
-                e.stopPropagation();
-            });
+    }
+
+    // ---------- LÓGICA COMPARTIR LINK (DIRECTOR) ----------
+    function generateInviteLink(peerId, room) {
+        const baseUrl = window.location.href.split('?')[0].split('#')[0];
+        // Codificamos peerId y room en URL
+        const params = new URLSearchParams();
+        params.set('director', peerId);
+        params.set('room', room);
+        return `${baseUrl}?${params.toString()}`;
+    }
+
+    function copyInviteLink() {
+        const peerIdField = document.getElementById('directorPeerIdBox');
+        const realPeerId = peerIdField.getAttribute('data-peer-id');
+        if (!realPeerId) {
+            showToast("Esperando ID del director...");
+            return;
+        }
+        const roomText = roomId;
+        const inviteLink = generateInviteLink(realPeerId, roomText);
+        navigator.clipboard.writeText(inviteLink).then(() => {
+            showToast("✅ Link de invitación copiado! Compártelo con tu equipo.");
+        }).catch(() => {
+            showToast("❌ No se pudo copiar, copia manualmente: " + inviteLink);
         });
     }
-    
-    // Toast simple
-    function showToast(msg) {
-        let toast = document.getElementById('dynamicToast');
-        if(!toast) {
-            toast = document.createElement('div');
-            toast.id = 'dynamicToast';
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '20px';
-            toast.style.right = '20px';
-            toast.style.maxWidth = '300px';
-            toast.style.background = '#1e293b';
-            toast.style.color = 'white';
-            toast.style.padding = '12px 20px';
-            toast.style.borderRadius = '60px';
-            toast.style.fontSize = '0.8rem';
-            toast.style.zIndex = '9999';
-            toast.style.backdropFilter = 'blur(8px)';
-            toast.style.border = '1px solid #3b82f6';
-            toast.style.textAlign = 'center';
-            document.body.appendChild(toast);
+
+    // Detectar si se abrió con parámetros (para el crew)
+    function checkAutoJoinFromLink() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const directorIdFromUrl = urlParams.get('director');
+        const roomFromUrl = urlParams.get('room');
+        if (directorIdFromUrl && roomFromUrl) {
+            // Auto-completar sala y cambiar a rol crew automáticamente
+            roomIdInput.value = roomFromUrl;
+            roleSelect.value = 'crew';
+            userNameInput.value = "CREW_" + Math.floor(Math.random()*1000);
+            showToast("🔗 Link de invitación detectado. Une como equipo...");
+            setTimeout(() => {
+                joinBtn.click();
+            }, 500);
+            return true;
         }
-        toast.innerText = msg;
-        toast.style.display = 'block';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 2000);
+        return false;
+    }
+
+    // ---------- DIRECTOR ----------
+    async function initAsDirector(room) {
+        isDirector = true;
+        await getMicrophone();
+        if (!mediaStream) return;
+        
+        // ID fijo por sala para facilitar invitación: director_<room>
+        const fixedDirectorId = `director_${room}`;
+        peer = new Peer(fixedDirectorId, { debug: 2 });
+        
+        peer.on('open', (id) => {
+            directorPeerId = id;
+            const idBox = document.getElementById('directorPeerIdBox');
+            idBox.innerHTML = `🆔 ID del Director: ${id}<br>🔗 Comparte el link con tu equipo`;
+            idBox.setAttribute('data-peer-id', id);
+            document.getElementById('directorRoomStatus').innerHTML = `🎬 Director - Sala: ${room} | ID: ${id.substring(0,12)}...`;
+            showToast(`Director online. ID: ${id}`, 2000);
+            
+            // configurar botón compartir
+            const shareBtn = document.getElementById('shareInviteBtn');
+            shareBtn.onclick = copyInviteLink;
+        });
+        
+        peer.on('call', (call) => {
+            const callerId = call.peer;
+            // Contestamos con el stream del director
+            call.answer(mediaStream);
+            
+            // Data channel para recibir info del crew (rol)
+            const dataConn = peer.connect(callerId);
+            dataConn.on('open', () => {
+                // solicitamos info
+                dataConn.send({ type: 'requestInfo' });
+            });
+            
+            let crewRole = "desconocido";
+            dataConn.on('data', (data) => {
+                if (data.type === 'crewInfo') {
+                    crewRole = data.role;
+                    showToast(`🎧 ${data.name} (${crewRole}) conectado`);
+                    updateCrewList();
+                }
+            });
+            
+            // Guardar metadata
+            call.metadata = { role: crewRole, peerId: callerId };
+            call.on('stream', (remoteStream) => {
+                // reproducción de audio del crew (si el director quiere escuchar)
+                const audioEl = new Audio();
+                audioEl.srcObject = remoteStream;
+                audioEl.volume = 0.6;
+                audioEl.play().catch(e=>console.log);
+                audioElements.set(callerId, audioEl);
+            });
+            connections.set(callerId, call);
+            updateCrewList();
+        });
+        
+        peer.on('connection', (conn) => {
+            // manejar data channel adicional
+        });
+        
+        // matriz de ruteo
+        document.querySelectorAll('.channel-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTargetChannel = btn.getAttribute('data-channel');
+                showToast(`🎯 Ruteo a: ${currentTargetChannel}`);
+            });
+        });
+        
+        // PTT director
+        const pttBtn = document.getElementById('directorPttBtn');
+        let talking = false;
+        const startTalk = (e) => {
+            e.preventDefault();
+            if (talking) return;
+            talking = true;
+            if(mediaStream) {
+                mediaStream.getAudioTracks().forEach(t => t.enabled = true);
+                localAudioEnabled = true;
+                pttBtn.classList.add('recording-active');
+                pttBtn.querySelector('.ptt-label').innerHTML = "🔴 HABLANDO...";
+                broadcastDirectorSpeaking(true);
+            }
+        };
+        const stopTalk = () => {
+            if (!talking) return;
+            talking = false;
+            if(mediaStream) {
+                mediaStream.getAudioTracks().forEach(t => t.enabled = false);
+                localAudioEnabled = false;
+                pttBtn.classList.remove('recording-active');
+                pttBtn.querySelector('.ptt-label').innerHTML = "🎙️ HABLAR";
+                broadcastDirectorSpeaking(false);
+            }
+        };
+        pttBtn.addEventListener('mousedown', startTalk);
+        pttBtn.addEventListener('mouseup', stopTalk);
+        pttBtn.addEventListener('touchstart', startTalk);
+        pttBtn.addEventListener('touchend', stopTalk);
+        
+        mediaStream.getAudioTracks().forEach(t => t.enabled = false);
+        
+        document.getElementById('directorPocketMode').onclick = () => activatePocketMode();
     }
     
-    // Copiar todos los enlaces
-    document.getElementById('copyAllLinksBtn')?.addEventListener('click', () => {
-        let allLinks = [];
-        for(let i=1; i<=CAM_COUNT; i++) {
-            allLinks.push(`Camarógrafo ${i}: https://caller.studio/C${i}?${BASE_PARAMS}`);
+    function broadcastDirectorSpeaking(isSpeaking) {
+        for(let [peerId, call] of connections.entries()) {
+            const dc = peer.connect(peerId);
+            dc.on('open', () => {
+                dc.send({ type: 'directorSpeaking', status: isSpeaking });
+                setTimeout(() => dc.close(), 100);
+            });
         }
-        const textToCopy = allLinks.join('\n');
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            showToast(`📋 Copiados ${CAM_COUNT} enlaces de camarógrafos`);
-        }).catch(() => alert('Copia manual: selecciona los enlaces'));
-    });
+    }
     
-    // Guía persistencia (modal alert style)
-    document.getElementById('helpPersistBtn')?.addEventListener('click', () => {
-        const msg = "🔊 CONSEJOS PARA EVITAR CORTE AL BLOQUEAR PANTALLA:\n\nAndroid: Ajustes → Apps → [Chrome/Firefox] → Batería → Sin restricciones / Optimización desactivada.\niOS: Ajustes → Safari → Reproducción en segundo plano → ACTIVAR.\nAdemás: Mantén la pestaña activa en segundo plano, no cierres el navegador. El audio seguirá sonando aunque esté bloqueado si diste los permisos.";
-        alert(msg);
-    });
-    
-    // Recargar iframe del director (útil si por alguna razón se desconecta)
-    const directorFrame = document.getElementById('directorFrame');
-    document.getElementById('reloadDirectorBtn')?.addEventListener('click', () => {
-        if(directorFrame) {
-            const currentSrc = directorFrame.src;
-            directorFrame.src = '';
-            setTimeout(() => {
-                directorFrame.src = currentSrc;
-                showToast('🔄 Conexión del director reiniciada');
-                updateDirectorStatus(true);
-            }, 200);
+    function updateCrewList() {
+        const container = document.getElementById('crewListContainer');
+        if (connections.size === 0) {
+            container.innerHTML = "— Sin crew conectado —";
+            return;
         }
-    });
+        container.innerHTML = "";
+        for(let [id, call] of connections.entries()) {
+            const div = document.createElement('div');
+            div.className = 'crew-item';
+            const shortId = id.substring(0, 14);
+            div.innerHTML = `<span>🎧 ${shortId}</span><span style="font-size:11px;">conectado</span>`;
+            container.appendChild(div);
+        }
+    }
     
-    // Abrir panel director en pantalla completa o nueva pestaña
-    document.getElementById('openDirectorFull')?.addEventListener('click', () => {
-        const directorUrl = "https://caller.studio/D1?novideo=1&ptt=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5";
-        window.open(directorUrl, '_blank', 'width=800,height=600');
-        showToast('🔓 Abierto en nueva ventana, el audio seguirá funcionando');
-    });
-    
-    // Pequeña simulación de estado (solo informativo)
-    function updateDirectorStatus(connected = true) {
-        const statusSpan = document.getElementById('directorStatus');
-        if(statusSpan) {
-            if(connected) {
-                statusSpan.innerHTML = '✅ Conectado · escuchando sala';
-                statusSpan.style.color = '#a3e635';
-            } else {
-                statusSpan.innerHTML = '⚠️ Reconectando...';
-                statusSpan.style.color = '#facc15';
+    // ---------- EQUIPO (CREW) con auto conexión al director vía parámetro o prompt ----------
+    async function initAsCrew(room, crewName, autoDirectorId = null) {
+        isDirector = false;
+        myCrewRole = crewName;
+        const stream = await getMicrophone();
+        if(!stream) return;
+        stream.getAudioTracks().forEach(t => t.enabled = false);
+        
+        let targetDirectorId = autoDirectorId;
+        if (!targetDirectorId) {
+            // Si no viene por link, preguntamos pero con hint
+            targetDirectorId = prompt("🔊 Ingresa el ID del Director (o pégalo del link). El director debe compartir su link.", `director_${room}`);
+            if (!targetDirectorId) {
+                showToast("No se especificó director, recarga e ingresa con link.");
+                return;
             }
         }
-    }
-    
-    // Detectar si el iframe ha cargado (evento no siempre accesible por dominio cruzado)
-    // pero al menos podemos asumir que se conecta; añadimos un temporizador para indicar
-    window.addEventListener('load', () => {
-        generateCamLinks();
-        updateDirectorStatus(true);
-        // Forzar un heartbeat para recordar que el audio debe mantenerse: 
-        // Pequeño script para evitar que el navegador suspenda el contexto de audio.
-        // No es necesario con caller.studio porque el stream WebRTC ya mantiene la conexión.
-        setInterval(() => {
-            // Si el iframe sigue cargado, se mantiene la sesión activa.
-            // Esto es solo para mantener la consciencia de que la página sigue viva.
-            console.log("🎙️ Comunicación persistente activa - heartbeat");
-        }, 25000);
-    });
-    
-    // Detectar cambios de visibilidad (por si el usuario quiere un aviso)
-    document.addEventListener('visibilitychange', () => {
-        if(document.hidden) {
-            console.log("📱 Pestaña en segundo plano - el audio continuará si los permisos están correctos");
-        } else {
-            console.log("🟢 Regreso a la pestaña - comunicación activa");
-        }
-    });
-    
-    // Prevenir cierre accidental antes de recargar?
-    window.addEventListener('beforeunload', (e) => {
-        // Mensaje opcional para advertir que no cierren la pestaña del director
-        // No abusivo, solo recordatorio.
-        e.preventDefault();
-        e.returnValue = "¿Cerrar la comunicación? Los camarógrafos seguirán conectados pero perderás el control.";
-        return "¿Cerrar la comunicación? Los camarógrafos seguirán conectados pero perderás el control.";
-    });
-    
-    // Botón extra para compartir link del director fácilmente (tool)
-    const shareDirectorBtn = document.createElement('button');
-    shareDirectorBtn.className = 'btn';
-    shareDirectorBtn.innerHTML = '📢 Compartir enlace del director';
-    shareDirectorBtn.style.marginLeft = 'auto';
-    const btnGroup = document.querySelector('.director-panel .button-group');
-    if(btnGroup) {
-        shareDirectorBtn.addEventListener('click', () => {
-            const directorLink = "https://caller.studio/D1?novideo=1&ptt=1&audiobitrate=128&codec=opus&autostart=1&monitor=1&background=1&reconnect=5";
-            navigator.clipboard.writeText(directorLink).then(() => {
-                showToast('🔗 Enlace del director copiado (solo para uso interno)');
+        
+        const myPeerId = `crew_${room}_${crewName}_${Date.now()}`;
+        peer = new Peer(myPeerId, { debug: 2 });
+        
+        peer.on('open', async () => {
+            showToast(`Crew conectando al director: ${targetDirectorId}`);
+            // Call al director
+            const call = peer.call(targetDirectorId, stream);
+            call.on('stream', (directorAudioStream) => {
+                const audioEl = new Audio();
+                audioEl.srcObject = directorAudioStream;
+                audioEl.play();
+                window.directorAudioStreamElement = audioEl;
+                document.getElementById('toggleMuteBtn').onclick = () => {
+                    audioEl.muted = !audioEl.muted;
+                    showToast(audioEl.muted ? "🔇 Retorno silenciado" : "🔊 Audio restaurado");
+                };
             });
+            
+            // Data channel para enviar rol y recibir alertas
+            const conn = peer.connect(targetDirectorId);
+            conn.on('open', () => {
+                conn.send({ type: 'crewInfo', role: crewName, name: userName });
+                directorDataConnection = conn;
+            });
+            
+            conn.on('data', (data) => {
+                if(data.type === 'directorSpeaking') {
+                    const alertDiv = document.getElementById('alertArea');
+                    const speakingDiv = document.getElementById('directorSpeakingIndicator');
+                    if(data.status) {
+                        alertDiv.style.display = "block";
+                        speakingDiv.innerHTML = "🔴 DIRECTOR HABLANDO...";
+                    } else {
+                        alertDiv.style.display = "none";
+                        speakingDiv.innerHTML = "⚫ En espera";
+                    }
+                }
+            });
+            
+            directorCallReference = call;
+            
+            // PTT Crew
+            const pttCrew = document.getElementById('crewPttBtn');
+            const activateMic = () => { stream.getAudioTracks().forEach(t => t.enabled = true); pttCrew.classList.add('recording-active'); };
+            const deactivateMic = () => { stream.getAudioTracks().forEach(t => t.enabled = false); pttCrew.classList.remove('recording-active'); };
+            pttCrew.addEventListener('mousedown', activateMic);
+            pttCrew.addEventListener('mouseup', deactivateMic);
+            pttCrew.addEventListener('touchstart', (e) => { e.preventDefault(); activateMic(); });
+            pttCrew.addEventListener('touchend', deactivateMic);
+            
+            document.getElementById('crewRoomLabel').innerHTML = `Sala: ${room} · Rol: ${crewName} | Conectado`;
+            document.getElementById('crewPocketMode').onclick = () => activatePocketMode();
+            showToast("✅ Conectado al director. Push To Talk listo.");
         });
-        btnGroup.appendChild(shareDirectorBtn);
+        
+        peer.on('error', (err) => {
+            console.error(err);
+            showToast("Error de conexión con director. Verifica ID.");
+        });
     }
     
-    // También mejoramos la accesibilidad: mostrar que el ID del director es fijo y que los C1..C8 son únicos
-    const infoExtra = document.createElement('div');
-    infoExtra.style.marginTop = '12px';
-    infoExtra.style.fontSize = '0.7rem';
-    infoExtra.style.background = '#0f172a70';
-    infoExtra.style.padding = '8px 12px';
-    infoExtra.style.borderRadius = '28px';
-    infoExtra.innerHTML = '🔁 <strong>Enlaces permanentes:</strong> el director siempre será <strong>D1</strong> y los camarógrafos desde <strong>C1 a C8</strong>. Cada vez que abran el enlace se unirán a la misma sala.';
-    document.querySelector('.director-panel').appendChild(infoExtra);
+    // ----- CONTROL VISTA PRINCIPAL -----
+    joinBtn.onclick = async () => {
+        roomId = roomIdInput.value.trim() || "8275";
+        userName = userNameInput.value.trim() || (roleSelect.value === 'director' ? "DIRECTOR" : "CREW");
+        role = roleSelect.value;
+        
+        configView.classList.remove('active');
+        
+        if(role === 'director') {
+            directorView.classList.add('active');
+            await initAsDirector(roomId);
+        } else {
+            crewView.classList.add('active');
+            // Verificar si hay parámetro en URL de invitación
+            const urlParams = new URLSearchParams(window.location.search);
+            const invitedDirectorId = urlParams.get('director');
+            if (invitedDirectorId && urlParams.get('room') === roomId) {
+                await initAsCrew(roomId, userName, invitedDirectorId);
+                // limpiar URL para no reutilizar
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                await initAsCrew(roomId, userName, null);
+            }
+        }
+    };
     
-    // Opción para mostrar en consola sugerencias técnicas
-    console.log("%c🎬 DIRECCIÓN CAM | Comunicación fija caller.studio", "color: #3b82f6; font-size: 16px");
-    console.log("Los camarógrafos deben copiar su enlace individual (C1..C8). Modo persistente activado.");
+    // al cargar la página, ver si viene con link para auto pre-seleccionar crew
+    window.addEventListener('DOMContentLoaded', () => {
+        checkAutoJoinFromLink();
+    });
 </script>
 </body>
 </html>
